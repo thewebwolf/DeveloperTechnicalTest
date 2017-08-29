@@ -1,24 +1,65 @@
-﻿<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS, and JavaScript.</p>
-    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+﻿@section Scripts
+{
+    <script src="@Url.Content("~/Scripts/jquery-ui.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.tmpl.js")"></script>
+    <script>
+        var myTimer = 0;
+        $('#country').on("keyup", function () {
+            var apiUrl = "http://localhost:55622/api/weather/" + this.value;
+            if ($("#country").val().length > 3) {
+                clearTimeout($(this).data('timeout'));
+                $(this).data('timeout', setTimeout(function () {
+                    $('#cityRow').show();
+                    $("#city").empty();
+                    $("#placeholder").empty();
+                    $.ajax({
+                        type: "GET",
+                        url: apiUrl,
+                        success: function (data) {
+                            $.each(data, function (i, obj) {
+                                $('<option />',
+                                    {
+                                        value: obj.CityName,
+                                        text: obj.CityName + " (" + obj.Country + ")"
+                                    }
+                                ).appendTo($("#city"));
+                            });
+                        }
+                    });
+                }, 800));
+            }
+        });
+
+        $(function () {
+            $('#city').on('change', function (e) {
+                $("#placeholder").empty();
+                $.ajax({
+                    type: "GET",
+                    url: "http://localhost:55622/api/weather/" + $('#country').value + "/" + encodeURIComponent(this.value),
+                    success: function (data) {
+                        $.tmpl("<div><label>Time:</label> ${Time}</div><div><label>SkyCondition:</label> ${SkyCondition}</div><div><label>Pressure:</label> ${Pressure}</div><div><label>Temperature:</label> ${Temperature}</div><div><label>RelativeHumidity:</label> ${RelativeHumidity}</div><div><label>Wind:</label> ${Wind}</div><div><label>Visibility:</label> ${Visibility}</div>", data).appendTo("#placeholder");
+                    }
+                });
+            });
+        });
+    </script>
+
+}
+<div class="jumbotron">
+    <h1>Weather service</h1>
+    <p class="lead">To find the weather in a city first enter country name then press tab to select form the cities in the entered country.</p>
+    <form>
+        <div class="form-group">
+            <label for="country">Country</label>
+            <input type="text" class="form-control" id="country" placeholder="Enter Country">
+        </div>
+        <div class="form-group" id="cityRow" style="display:none;">
+            <label for="city">City</label>
+            <select class="custom-select" id="city" style="width:600px;"></select>
+        </div>
+        <button type="submit" id="getWeather" class="btn btn-primary" style="display:none;">Find weather &raquo;</button>
+    </form>
+    <div id="placeholder"></div>
+
 </div>
-<div class="row">
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>ASP.NET Web API is a framework that makes it easy to build HTTP services that reach
-        a broad range of clients, including browsers and mobile devices. ASP.NET Web API
-        is an ideal platform for building RESTful applications on the .NET Framework.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301870">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301871">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301872">Learn more &raquo;</a></p>
-    </div>
-</div>
+
